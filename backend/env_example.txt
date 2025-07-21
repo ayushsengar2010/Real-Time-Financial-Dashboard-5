@@ -1,0 +1,27 @@
+# Database Configuration
+DATABASE_URL=postgresql://user:password@localhost:5432/financial_dashboard
+TEST_DATABASE_URL=postgresql://user:password@localhost:5432/test_financial_dashboard
+
+# JWT Configuration
+SECRET_KEY=your-secret-key-here
+ALGORITHM=HS256
+ACCESS_TOKEN_EXPIRE_MINUTES=30
+
+# OAuth Configuration
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+GITHUB_CLIENT_ID=your-github-client-id
+GITHUB_CLIENT_SECRET=your-github-client-secret
+
+# AI Configuration
+OPENAI_API_KEY=your-openai-api-key
+HUGGINGFACE_API_KEY=your-huggingface-api-key
+
+# Financial Data API (Optional)
+ALPHA_VANTAGE_API_KEY=your-alpha-vantage-api-key
+FINNHUB_API_KEY=d1v45b1r01qo0ln2ealgd1v45b1r01qo0ln2eam0
+
+# Server Configuration
+HOST=0.0.0.0
+PORT=8000
+DEBUG=True 

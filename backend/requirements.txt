@@ -1,0 +1,8 @@
+fastapi
+uvicorn
+passlib==2.0.0
+bcrypt==3.2.0
+yfinance
+SQLAlchemy
+python-dotenv
+python-jose[cryptography] 
