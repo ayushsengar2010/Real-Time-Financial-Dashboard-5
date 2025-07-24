@@ -1,8 +1,8 @@
 fastapi
 uvicorn
-passlib==2.0.0
+passlib==1.7.4  # Corrected from 2.0.0, as 2.0.0 does not exist
 bcrypt==3.2.0
 yfinance
 SQLAlchemy
 python-dotenv
-python-jose[cryptography] 
+python-jose[cryptography]
