@@ -21,5 +21,4 @@ def validate_password(password: str) -> bool:
         return False
     if not re.search(r"[!@#$%^&*(),.?:{}|<>]", password):
         return False
-    
-    return True 
+    return True
