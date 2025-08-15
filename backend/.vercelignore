@@ -1,0 +1,13 @@
+.git/
+.github/
+.venv/
+__pycache__/
+*.pyc
+*.sqlite3
+tests/
+docs/
+.env
+README.md
+# Add any other large files or directories that are not needed for production
+# For example, if you have a 'data/' folder with large files not needed at runtime:
+# data/
