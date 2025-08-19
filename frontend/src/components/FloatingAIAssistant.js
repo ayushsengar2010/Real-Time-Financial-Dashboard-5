@@ -20,11 +20,19 @@ const FloatingAIAssistant = () => {
         query: input,
         symbols: [],
       });
+      // Make sure we're handling the response properly
+      const analysisText = typeof res.data.analysis === 'object' 
+        ? JSON.stringify(res.data.analysis) 
+        : res.data.analysis;
+      
       setMessages((msgs) => [
         ...msgs,
-        { sender: 'ai', text: res.data.analysis }
+        { sender: 'ai', text: analysisText }
       ]);
     } catch (err) {
+      console.error('AI Assistant error:', err);
+      // Log the full error for debugging
+      console.error('Error details:', err.response ? err.response.data : err.message);
       setMessages((msgs) => [
         ...msgs,
         { sender: 'ai', text: 'Sorry, something went wrong.' }
@@ -50,7 +58,9 @@ const FloatingAIAssistant = () => {
             )}
             {messages.map((msg, idx) => (
               <div key={idx} className={`mb-2 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`px-3 py-2 rounded-lg text-sm ${msg.sender === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>{msg.text}</div>
+                <div className={`px-3 py-2 rounded-lg text-sm ${msg.sender === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                  {typeof msg.text === 'object' ? JSON.stringify(msg.text) : msg.text}
+                </div>
               </div>
             ))}
             {loading && <div className="text-xs text-gray-400">AI is typing...</div>}
@@ -86,4 +96,4 @@ const FloatingAIAssistant = () => {
   );
 };
 
-export default FloatingAIAssistant; 
+export default FloatingAIAssistant;
