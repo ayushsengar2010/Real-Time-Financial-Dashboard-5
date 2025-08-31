@@ -43,12 +43,16 @@ async def analyze_market(
         analysis = await ai_service.analyze_market(query.symbols[0], query.query)
     else:
         # Generate general insight
+        insight_response = await ai_service.generate_insight(query.query)
+        print(f"Received insight response for query '{query.query}': {insight_response[:100]}...")
+        
+        # Create analysis object with the Gemini response
         analysis = FinancialAnalysis(
             query=query.query,
-            analysis=await ai_service.generate_insight(query.query),
+            analysis=insight_response,
             recommendations=["Monitor market conditions", "Review portfolio allocation"],
-            risk_assessment="General market risk assessment",
-            confidence_score=0.75
+            risk_assessment="This is a general insight based on your query.",
+            confidence_score=0.85
         )
     
     # Save insight to database

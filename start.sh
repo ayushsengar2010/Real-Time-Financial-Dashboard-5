@@ -3,8 +3,24 @@
 echo "Starting Real-Time Financial Insights Dashboard..."
 echo
 
-echo "Starting backend..."
+echo "Checking environment setup..."
 cd backend
+if [ ! -f .env ]; then
+  echo "Creating .env file from template..."
+  cp env_example.txt .env
+  echo ".env file created! Please update it with your API keys."
+  
+  # Try to open with common text editors
+  if command -v nano &> /dev/null; then
+    nano .env
+  elif command -v vim &> /dev/null; then
+    vim .env
+  else
+    echo "Please manually edit the .env file to add your API keys."
+  fi
+fi
+
+echo "Starting backend..."
 source venv/bin/activate
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000 &
 BACKEND_PID=$!

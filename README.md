@@ -34,6 +34,7 @@ A real-time financial monitoring system with portfolio tracking and live market 
 - **Node.js 18+**
 - **Python 3.11+**
 - **A free Finnhub.io API Key**
+- **A Gemini API Key** (for the AI financial assistant)
 
 ## 🚀 Getting Started (Local Development)
 
@@ -69,15 +70,19 @@ pip install -r requirements.txt
 ```
 
 #### d. Create the Environment File
-This is the most important step for the application to work. You need to create a `.env` file to store your API key.
+This is the most important step for the application to work. You need to create a `.env` file to store your API keys.
 
 1.  **Get your free API key** from [Finnhub.io](https://finnhub.io/).
-2.  **Create a new file** named `.env` inside the `backend` directory.
-3.  **Add your API key** to the file like this:
+2.  **Get your Gemini API key** from [Google AI Studio](https://ai.google.dev/).
+3.  **Create a new file** named `.env` inside the `backend` directory.
+4.  **Add your API keys** to the file like this:
     ```env
     FINNHUB_API_KEY="YOUR_FINNHUB_API_KEY_HERE"
+    GEMINI_API_KEY="YOUR_GEMINI_API_KEY_HERE"
     ```
-    *(Replace `YOUR_FINNHUB_API_KEY_HERE` with the key you copied from the Finnhub dashboard.)*
+    *(Replace with the actual API keys you've obtained)*
+    
+    **Note**: When you run start.bat or start.sh for the first time, it will automatically create this .env file from the template and prompt you to add your API keys.
 
 #### e. Run the Backend Server
 ```bash

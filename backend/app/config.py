@@ -21,6 +21,7 @@ class Settings(BaseSettings):
     # AI APIs
     openai_api_key: Optional[str] = None
     huggingface_api_key: Optional[str] = None
+    gemini_api_key: Optional[str] = None
     
     # Financial APIs
     alpha_vantage_api_key: Optional[str] = None
