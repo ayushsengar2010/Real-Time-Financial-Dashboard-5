@@ -4,8 +4,8 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # Database - Using SQLite for easier setup
-    database_url: str = "sqlite:///./financial_dashboard.db"
-    test_database_url: str = "sqlite:///./test_financial_dashboard.db"
+    database_url: str = "sqlite:///financial_dashboard.db"
+    test_database_url: str = "sqlite:///test.db"
     
     # JWT
     secret_key: str = "your-secret-key-here-change-in-production"
