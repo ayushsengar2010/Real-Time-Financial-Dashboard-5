@@ -11,9 +11,14 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     const token = localStorage.getItem('token');
+    const userInfo = localStorage.getItem('userInfo');
     if (token) {
       api.default.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      setUser({ token });
+      if (userInfo) {
+        setUser({ ...JSON.parse(userInfo), token });
+      } else {
+        setUser({ token });
+      }
     }
     setLoading(false);
   }, []);
@@ -27,22 +32,30 @@ export const AuthProvider = ({ children }) => {
       if (!response || !response.data) {
         throw new Error('No response from server');
       }
-      const { access_token } = response.data;
+      const { access_token, user: userInfo } = response.data;
       localStorage.setItem('token', access_token);
+      
+      // Always store username in user object, even if backend doesn't return user info
+      const userToStore = userInfo 
+        ? { ...userInfo, token: access_token } 
+        : { username: formData.username, token: access_token };
+        
+      localStorage.setItem('userInfo', JSON.stringify(userToStore));
+      setUser(userToStore);
+      
       api.default.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
-      setUser({ token: access_token });
       navigate('/dashboard');
     } catch (err) {
-      // Propagate error up so Login.js can display it
       throw err;
     }
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
-    delete api.default.defaults.headers.common['Authorization'];
-    setUser(null);
-    navigate('/');
+  localStorage.removeItem('token');
+  localStorage.removeItem('userInfo');
+  delete api.default.defaults.headers.common['Authorization'];
+  setUser(null);
+  navigate('/');
   };
 
   return (

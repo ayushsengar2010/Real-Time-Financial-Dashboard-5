@@ -9,9 +9,15 @@ const Sidebar = () => {
     <div className="w-64 bg-gray-900 text-white flex flex-col">
       <div className="text-center py-8">
         <div className="w-24 h-24 rounded-full bg-gray-700 mx-auto mb-4 flex items-center justify-center">
-          <span className="text-2xl font-bold">{user?.username?.charAt(0).toUpperCase() || 'A'}</span>
+          <span className="text-2xl font-bold">
+            {user?.full_name 
+              ? user.full_name.charAt(0).toUpperCase() 
+              : user?.username?.charAt(0).toUpperCase() || 'A'}
+          </span>
         </div>
-        <h2 className="text-xl font-bold">{user?.username || 'ayush'}</h2>
+        <h2 className="text-xl font-bold">
+          {user?.full_name || user?.username || user?.email || 'User'}
+        </h2>
       </div>
       <nav className="flex-1 px-4">
         <ul>

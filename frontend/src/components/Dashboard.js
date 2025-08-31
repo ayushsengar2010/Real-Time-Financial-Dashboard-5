@@ -5,7 +5,7 @@ import API from '../api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 
 const Dashboard = () => {
-  const { logout } = useContext(AuthContext);
+  const { logout, user } = useContext(AuthContext);
   const [marketSummary, setMarketSummary] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -59,7 +59,7 @@ const Dashboard = () => {
         <div className="w-64 bg-gray-800 text-white min-h-screen p-4">
           <div className="text-center mb-8">
             <div className="w-24 h-24 rounded-full bg-gray-700 mx-auto mb-4"></div>
-            <h2 className="text-xl font-bold">ayush</h2>
+            <h2 className="text-xl font-bold">{user?.name || user?.email || "User"}</h2>
           </div>
           <ul>
             <li className="mb-4"><button className="hover:text-teal-400">Portfolios</button></li>

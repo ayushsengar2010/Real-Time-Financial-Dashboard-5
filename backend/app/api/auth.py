@@ -45,7 +45,7 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     
     return db_user
 
-@router.post("/token", response_model=Token)
+@router.post("/token")
 def login_for_access_token(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)
@@ -64,7 +64,16 @@ def login_for_access_token(
         data={"sub": user.username}, expires_delta=access_token_expires
     )
     
-    return {"access_token": access_token, "token_type": "bearer"}
+    # Return user info along with the token
+    return {
+        "access_token": access_token, 
+        "token_type": "bearer",
+        "user": {
+            "username": user.username,
+            "email": user.email,
+            "full_name": user.full_name
+        }
+    }
 
 @router.get("/me", response_model=UserSchema)
 def read_users_me(current_user: User = Depends(get_current_active_user)):
