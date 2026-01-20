@@ -61,7 +61,7 @@ source venv/bin/activate
 
 # On Windows
 python -m venv venv
-.\venv\Scripts\activate
+venv\Scripts\activate
 ```
 
 #### c. Install Dependencies
