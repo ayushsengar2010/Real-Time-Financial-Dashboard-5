@@ -1,4 +1,3 @@
-from typing import List, Optional
 from fastapi import APIRouter, Depends, Query
 from ..auth import get_current_active_user
 from ..models import User
@@ -45,4 +44,28 @@ async def get_available_symbols(
     return {
         "symbols": market_data_service.symbols,
         "count": len(market_data_service.symbols)
-    } 
+    }
+
+@router.get("/providers")
+async def get_provider_status(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get market data provider health/status."""
+    return market_data_service.provider_status()
+
+@router.get("/heatmap")
+async def get_sector_heatmap(
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get sector-level heatmap data."""
+    return await market_data_service.get_sector_heatmap()
+
+@router.get("/news")
+async def get_market_news(
+    symbols: str | None = Query(None, description="Comma separated symbols, e.g. AAPL,MSFT"),
+    limit: int = Query(20, ge=1, le=50),
+    current_user: User = Depends(get_current_active_user)
+):
+    """Get latest market news with lightweight sentiment classification."""
+    symbol_list = [s.strip().upper() for s in symbols.split(",")] if symbols else None
+    return await market_data_service.get_market_news(symbol_list, limit)

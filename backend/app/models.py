@@ -18,6 +18,7 @@ class User(Base):
     # Relationships
     portfolios = relationship("Portfolio", back_populates="user")
     alerts = relationship("Alert", back_populates="user")
+    alert_events = relationship("AlertEvent", back_populates="user")
 
 class Portfolio(Base):
     __tablename__ = "portfolios"
@@ -70,6 +71,24 @@ class Alert(Base):
     
     # Relationships
     user = relationship("User", back_populates="alerts")
+    events = relationship("AlertEvent", back_populates="alert", cascade="all, delete-orphan")
+
+class AlertEvent(Base):
+    __tablename__ = "alert_events"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    alert_id = Column(Integer, ForeignKey("alerts.id"), index=True)
+    symbol = Column(String, index=True)
+    alert_type = Column(String)
+    threshold = Column(Float)
+    current_price = Column(Float)
+    change_percent = Column(Float, nullable=True)
+    message = Column(Text)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+    user = relationship("User", back_populates="alert_events")
+    alert = relationship("Alert", back_populates="events")
 
 class AIInsight(Base):
     __tablename__ = "ai_insights"

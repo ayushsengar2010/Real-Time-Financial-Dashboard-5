@@ -6,6 +6,8 @@ import asyncio
 from .config import settings
 from .database import engine, Base
 from .api import auth, portfolios, market, ai, alerts
+from .services.market_data import market_data_service
+from .services.alert_monitor import alert_monitor_service
 
 # Create tables on startup
 Base.metadata.create_all(bind=engine)
@@ -41,6 +43,14 @@ app.include_router(market.router, prefix="/api/v1")
 app.include_router(ai.router, prefix="/api/v1")
 app.include_router(alerts.router, prefix="/api/v1")
 
+@app.on_event("startup")
+async def startup_event():
+    await alert_monitor_service.start()
+
+@app.on_event("shutdown")
+async def shutdown_event():
+    await alert_monitor_service.stop()
+
 # WebSocket connection manager
 class ConnectionManager:
     def __init__(self):
@@ -67,19 +77,18 @@ async def websocket_market_endpoint(websocket: WebSocket):
     await manager.connect(websocket)
     try:
         while True:
-            # Send market updates every 5 seconds
+            # Send live market summary every 5 seconds
             await asyncio.sleep(5)
+            summary = await market_data_service.get_market_summary()
             market_data = {
                 "type": "market_update",
-                "timestamp": "2024-01-01T00:00:00Z",
-                "data": {
-                    "AAPL": {"price": 150.25, "change": 1.2},
-                    "GOOGL": {"price": 2800.50, "change": -0.8},
-                    "MSFT": {"price": 300.75, "change": 0.5}
-                }
+                "timestamp": summary.get("updated_at"),
+                "data": summary,
             }
             await websocket.send_text(json.dumps(market_data))
     except WebSocketDisconnect:
+        manager.disconnect(websocket)
+    except Exception:
         manager.disconnect(websocket)
 
 @app.get("/")
@@ -92,7 +101,11 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy",
+        "providers": market_data_service.provider_status(),
+        "alert_monitor": alert_monitor_service.status(),
+    }
 
 if __name__ == "__main__":
     import uvicorn

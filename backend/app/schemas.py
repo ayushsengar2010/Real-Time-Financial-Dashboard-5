@@ -113,6 +113,23 @@ class Alert(AlertBase):
     class Config:
         from_attributes = True
 
+class AlertEventBase(BaseModel):
+    symbol: str
+    alert_type: str
+    threshold: float
+    current_price: float
+    change_percent: Optional[float] = None
+    message: str
+
+class AlertEvent(AlertEventBase):
+    id: int
+    user_id: int
+    alert_id: int
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
 # AI Insight schemas
 class AIInsightBase(BaseModel):
     query: str
