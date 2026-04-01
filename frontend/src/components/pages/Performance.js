@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from 'recharts';
-import API from '../../api';
+import API, { getHistoricalData } from '../../api';
 
 const DAYS = 30;
+const PERFORMANCE_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const Performance = () => {
   const [portfolios, setPortfolios] = useState([]);
@@ -46,14 +47,14 @@ const Performance = () => {
         }
 
         const histResponses = await Promise.allSettled(
-          holdings.map((h) => API.get(`/market/data/${h.symbol}/historical`, { params: { days: DAYS } }))
+          holdings.map((h) => getHistoricalData(h.symbol, DAYS, { ttlMs: PERFORMANCE_CACHE_TTL_MS }))
         );
 
         const valid = histResponses
           .map((r, idx) => {
             if (r.status !== 'fulfilled') return null;
             const h = holdings[idx];
-            const points = r.value.data?.data || [];
+            const points = r.value?.data || [];
             return {
               symbol: h.symbol,
               qty: Number(h.quantity),

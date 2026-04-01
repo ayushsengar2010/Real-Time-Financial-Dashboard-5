@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import API from '../../api';
+import API, { getHistoricalData } from '../../api';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { Activity, BarChart, RefreshCw, TrendingDown, TrendingUp, Wifi, WifiOff } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const REFRESH_INTERVAL_MS = 20000;
+const SPARKLINE_HISTORY_DAYS = 7;
+const SPARKLINE_CACHE_TTL_MS = 10 * 60 * 1000;
 
 const SkeletonCard = () => (
   <div className="bg-gray-200 p-6 rounded-lg shadow-lg animate-pulse">
@@ -32,8 +34,8 @@ const Home = () => {
   const [lastUpdated, setLastUpdated] = useState('');
   const [wsConnected, setWsConnected] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
-  const sparklineSymbols = useMemo(
-    () => (marketSummary?.most_active || []).slice(0, 8).map((s) => s.symbol),
+  const sparklineSymbolsKey = useMemo(
+    () => (marketSummary?.most_active || []).slice(0, 8).map((s) => s.symbol).join(','),
     [marketSummary?.most_active]
   );
 
@@ -93,24 +95,24 @@ const Home = () => {
 
   useEffect(() => {
     const loadSparklines = async () => {
-      const symbols = sparklineSymbols;
+      const symbols = sparklineSymbolsKey ? sparklineSymbolsKey.split(',') : [];
       if (symbols.length === 0) {
         setSparklineMap({});
         return;
       }
-      const responses = await Promise.allSettled(
-        symbols.map((symbol) => API.get(`/market/data/${symbol}/historical`, { params: { days: 7 } }))
-      );
+      const responses = await Promise.allSettled(symbols.map((symbol) => getHistoricalData(symbol, SPARKLINE_HISTORY_DAYS, {
+        ttlMs: SPARKLINE_CACHE_TTL_MS,
+      })));
       const next = {};
       responses.forEach((res, idx) => {
         if (res.status !== 'fulfilled') return;
         const symbol = symbols[idx];
-        next[symbol] = (res.value.data?.data || []).map((p) => ({ d: p.date, c: p.close }));
+        next[symbol] = (res.value?.data || []).map((p) => ({ d: p.date, c: p.close }));
       });
       setSparklineMap(next);
     };
     loadSparklines();
-  }, [marketSummary?.updated_at, sparklineSymbols]);
+  }, [sparklineSymbolsKey]);
 
   const chartData = useMemo(
     () =>
