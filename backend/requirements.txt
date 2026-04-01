@@ -6,3 +6,8 @@ yfinance
 SQLAlchemy
 python-dotenv
 python-jose[cryptography]
+pydantic-settings
+python-multipart
+email-validator
+finnhub-python
+google-generativeai

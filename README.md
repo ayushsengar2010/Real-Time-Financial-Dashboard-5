@@ -118,3 +118,44 @@ Once the backend is running, you can explore the API documentation:
 ## ⚠️ Disclaimer
 
 This application is for **educational and demonstration purposes only**. It uses real-time data but should not be used for actual financial trading or investment decisions. Always consult with qualified financial advisors before making investment decisions. 
+
+## Quick Start (Stabilized Setup)
+
+For the most reliable startup path on Windows:
+
+```powershell
+.\start_project.ps1
+```
+
+How it works:
+- If Docker daemon is running, it starts full stack with `docker compose up --build`.
+- If Docker is not available, it falls back to local backend/frontend startup in separate terminals.
+
+### Important Notes
+
+- In PowerShell, use `npm.cmd` commands (for example `npm.cmd start`) if `npm.ps1` is blocked by execution policy.
+- Backend dependencies are defined in `backend/requirements.txt` and include required runtime packages like `python-multipart`, `pydantic-settings`, `email-validator`, `finnhub-python`, and `google-generativeai`.
+
+### API Keys
+
+Optional for demo mode:
+- `FINNHUB_API_KEY`
+- `GEMINI_API_KEY`
+
+If these are not set, backend now runs with safe fallback responses for those services.
+
+## Iteration Update (Live Data + Professional UX)
+
+Implemented in this iteration:
+- Multi-provider live market service in backend (`Finnhub -> yfinance fallback`).
+- Live market WebSocket stream now sends real summary data (not hardcoded demo values).
+- Market summary now includes provider status and update timestamp.
+- New `/api/v1/market/providers` endpoint for provider health visibility.
+- Dashboard Home upgraded with auto-refresh, manual refresh, stream status, provider badge, and live update timestamp.
+- Most Active page now fetches and renders real market rows with search/filter.
+- Portfolio page now includes sync action and live total value snapshots per portfolio.
+- AI assistant UI cleaned for consistent symbols/icons.
+- `backend/env_example.txt` updated for clean local setup.
+
+To use genuine live feeds, set `FINNHUB_API_KEY` in `backend/.env`.
+If Finnhub hits rate limits or is unavailable, backend automatically falls back to yfinance.

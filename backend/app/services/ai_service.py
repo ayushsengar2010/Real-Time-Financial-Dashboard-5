@@ -2,7 +2,12 @@ import random
 import os
 from typing import List, Dict, Optional
 from datetime import datetime
-import google.generativeai as genai
+
+try:
+    import google.generativeai as genai
+except ImportError:
+    genai = None
+
 from ..config import settings
 from ..schemas import FinancialAnalysis
 
@@ -30,7 +35,7 @@ class AIService:
         self.use_gemini = False
         print(f"Checking Gemini API key configuration...")
         
-        if settings.gemini_api_key:
+        if settings.gemini_api_key and genai is not None:
             try:
                 print(f"Gemini API key found: {settings.gemini_api_key[:10]}...")
                 genai.configure(api_key=settings.gemini_api_key)
@@ -68,13 +73,16 @@ class AIService:
                 if not model_initialized:
                     print("Failed to initialize any Gemini model. AI will use fallback responses.")
                     self.use_gemini = False
-                
-                self.use_gemini = True
-                print(f"Successfully initialized Gemini API")
+                else:
+                    self.use_gemini = True
+                    print("Successfully initialized Gemini API")
             except Exception as e:
                 print(f"Failed to initialize Gemini API: {str(e)}")
         else:
-            print("No Gemini API key found in settings")
+            if not settings.gemini_api_key:
+                print("No Gemini API key found in settings")
+            if genai is None:
+                print("google-generativeai is not installed; AI endpoints will use fallback responses")
     
     async def analyze_market(self, symbol: str, query: str) -> FinancialAnalysis:
         """Analyze market data and provide insights"""
@@ -338,7 +346,7 @@ class AIService:
                 Make sure to provide factual information with specific examples or data when possible.
                 Keep the response concise (under 200 words) but informative.
                 
-                Today is August 31, 2025.
+                Today is {datetime.utcnow().strftime("%B %d, %Y")}.
                 """
                 
                 # Get response from Gemini
@@ -373,7 +381,7 @@ class AIService:
         
         # Detect what the user is asking about
         if any(term in query_lower for term in ['open', 'closed', 'market', 'trading', 'hours']):
-            return """As of August 31, 2025, most major stock markets are open for regular trading hours.
+            return """Most major stock markets run regular weekday trading hours.
             
 The New York Stock Exchange (NYSE) and NASDAQ operate from 9:30 AM to 4:00 PM Eastern Time on weekdays.
 Asian markets like Tokyo and Hong Kong have already closed for the day, while European markets are nearing their close.
