@@ -1,5 +1,5 @@
 # orm/query.py
-# Copyright (C) 2005-2025 the SQLAlchemy authors and contributors
+# Copyright (C) 2005-2026 the SQLAlchemy authors and contributors
 # <see AUTHORS file>
 #
 # This module is part of SQLAlchemy and is released under
@@ -1042,7 +1042,7 @@ class Query(
         ":meth:`_orm.Query.get`",
         alternative="The method is now available as :meth:`_orm.Session.get`",
     )
-    def get(self, ident: _PKIdentityArgument) -> Optional[Any]:
+    def get(self, ident: _PKIdentityArgument) -> Optional[_T]:
         """Return an instance based on the given primary key identifier,
         or ``None`` if not found.
 
@@ -2844,7 +2844,7 @@ class Query(
         try:
             yield from result  # type: ignore
         except GeneratorExit:
-            # issue #8710 - direct iteration is not re-usable after
+            # issue #8710 - direct iteration is not reusable after
             # an iterable block is broken, so close the result
             result._soft_close()
             raise
@@ -3205,11 +3205,14 @@ class Query(
             delete_ = delete_.with_dialect_options(**delete_args)
 
         delete_._where_criteria = self._where_criteria
-        result: CursorResult[Any] = self.session.execute(
-            delete_,
-            self._params,
-            execution_options=self._execution_options.union(
-                {"synchronize_session": synchronize_session}
+        result = cast(
+            "CursorResult[Any]",
+            self.session.execute(
+                delete_,
+                self._params,
+                execution_options=self._execution_options.union(
+                    {"synchronize_session": synchronize_session}
+                ),
             ),
         )
         bulk_del.result = result  # type: ignore
@@ -3296,11 +3299,14 @@ class Query(
             upd = upd.with_dialect_options(**update_args)
 
         upd._where_criteria = self._where_criteria
-        result: CursorResult[Any] = self.session.execute(
-            upd,
-            self._params,
-            execution_options=self._execution_options.union(
-                {"synchronize_session": synchronize_session}
+        result = cast(
+            "CursorResult[Any]",
+            self.session.execute(
+                upd,
+                self._params,
+                execution_options=self._execution_options.union(
+                    {"synchronize_session": synchronize_session}
+                ),
             ),
         )
         bulk_ud.result = result  # type: ignore
