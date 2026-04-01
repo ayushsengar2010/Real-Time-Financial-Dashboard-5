@@ -1,29 +1,68 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import API from '../../api';
-import { PlusCircle } from 'lucide-react';
+import { PlusCircle, RefreshCw } from 'lucide-react';
 
 const Portfolios = () => {
   const [portfolios, setPortfolios] = useState([]);
+  const [portfolioValues, setPortfolioValues] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newPortfolioName, setNewPortfolioName] = useState('');
   const [newPortfolioDescription, setNewPortfolioDescription] = useState('');
+  const [syncing, setSyncing] = useState(false);
+
+  const fetchPortfolios = async () => {
+    try {
+      setLoading(true);
+      const response = await API.get('/portfolios');
+      setPortfolios(response.data);
+      setError('');
+      return response.data;
+    } catch {
+      setError('Failed to fetch portfolios.');
+      return [];
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchPortfolioValues = async (list) => {
+    const values = {};
+    await Promise.all(
+      list.map(async (portfolio) => {
+        try {
+          const { data } = await API.get(`/portfolios/${portfolio.id}/value`);
+          values[portfolio.id] = data;
+        } catch {
+          values[portfolio.id] = null;
+        }
+      })
+    );
+    setPortfolioValues(values);
+  };
+
+  const syncAll = async () => {
+    setSyncing(true);
+    const list = await fetchPortfolios();
+    await fetchPortfolioValues(list);
+    setSyncing(false);
+  };
 
   useEffect(() => {
-    const fetchPortfolios = async () => {
-      try {
-        setLoading(true);
-        const response = await API.get('/portfolios');
-        setPortfolios(response.data);
-      } catch (err) {
-        setError('Failed to fetch portfolios.');
-      }
-      setLoading(false);
+    const load = async () => {
+      await fetchPortfolios();
     };
-
-    fetchPortfolios();
+    load();
   }, []);
+
+  useEffect(() => {
+    if (portfolios.length > 0) {
+      fetchPortfolioValues(portfolios);
+    } else {
+      setPortfolioValues({});
+    }
+  }, [portfolios]);
 
   const handleCreatePortfolio = async (e) => {
     e.preventDefault();
@@ -32,11 +71,13 @@ const Portfolios = () => {
         name: newPortfolioName,
         description: newPortfolioDescription,
       });
-      setPortfolios([...portfolios, response.data]);
+      const updated = [...portfolios, response.data];
+      setPortfolios(updated);
       setIsModalOpen(false);
       setNewPortfolioName('');
       setNewPortfolioDescription('');
-    } catch (err) {
+      setError('');
+    } catch {
       setError('Failed to create portfolio.');
     }
   };
@@ -45,24 +86,38 @@ const Portfolios = () => {
     <div>
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-4xl font-bold">Your Portfolios</h1>
-        <button
-          onClick={() => setIsModalOpen(true)}
-          className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg flex items-center hover:bg-indigo-700 transition duration-300"
-        >
-          <PlusCircle className="mr-2" /> Create New Portfolio
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={syncAll}
+            className="bg-gray-100 text-gray-700 font-semibold py-2 px-4 rounded-lg flex items-center hover:bg-gray-200 transition duration-300"
+          >
+            <RefreshCw size={16} className="mr-2" /> {syncing ? 'Syncing...' : 'Sync'}
+          </button>
+          <button
+            onClick={() => setIsModalOpen(true)}
+            className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg flex items-center hover:bg-indigo-700 transition duration-300"
+          >
+            <PlusCircle className="mr-2" /> Create New Portfolio
+          </button>
+        </div>
       </div>
 
       {loading && <p>Loading portfolios...</p>}
       {error && <p className="text-red-500">{error}</p>}
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {portfolios.map(portfolio => (
-          <div key={portfolio.id} className="bg-white p-6 rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-2">{portfolio.name}</h2>
-            <p className="text-gray-600">{portfolio.description}</p>
-          </div>
-        ))}
+        {portfolios.map((portfolio) => {
+          const valueData = portfolioValues[portfolio.id];
+          const totalValue = valueData?.total_value;
+          return (
+            <div key={portfolio.id} className="bg-white p-6 rounded-lg shadow-md">
+              <h2 className="text-2xl font-bold mb-2">{portfolio.name}</h2>
+              <p className="text-gray-600 mb-4">{portfolio.description || 'No description'}</p>
+              <div className="text-sm text-gray-500">Current Value</div>
+              <div className="text-2xl font-bold">{typeof totalValue === 'number' ? `$${totalValue.toLocaleString()}` : 'Unavailable'}</div>
+            </div>
+          );
+        })}
       </div>
 
       {portfolios.length === 0 && !loading && (
@@ -77,7 +132,9 @@ const Portfolios = () => {
             <h2 className="text-2xl font-bold mb-4">Create New Portfolio</h2>
             <form onSubmit={handleCreatePortfolio}>
               <div className="mb-4">
-                <label htmlFor="name" className="block text-gray-700 font-bold mb-2">Portfolio Name</label>
+                <label htmlFor="name" className="block text-gray-700 font-bold mb-2">
+                  Portfolio Name
+                </label>
                 <input
                   type="text"
                   id="name"
@@ -88,7 +145,9 @@ const Portfolios = () => {
                 />
               </div>
               <div className="mb-6">
-                <label htmlFor="description" className="block text-gray-700 font-bold mb-2">Description</label>
+                <label htmlFor="description" className="block text-gray-700 font-bold mb-2">
+                  Description
+                </label>
                 <textarea
                   id="description"
                   value={newPortfolioDescription}
@@ -104,10 +163,7 @@ const Portfolios = () => {
                 >
                   Cancel
                 </button>
-                <button
-                  type="submit"
-                  className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300"
-                >
+                <button type="submit" className="bg-indigo-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-indigo-700 transition duration-300">
                   Create
                 </button>
               </div>
@@ -119,4 +175,4 @@ const Portfolios = () => {
   );
 };
 
-export default Portfolios; 
+export default Portfolios;

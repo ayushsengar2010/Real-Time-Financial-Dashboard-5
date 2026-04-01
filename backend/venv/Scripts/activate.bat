@@ -8,7 +8,7 @@ if defined _OLD_CODEPAGE (
     "%SystemRoot%\System32\chcp.com" 65001 > nul
 )
 
-set "VIRTUAL_ENV=C:\Personal\Real-Time Financial Insights Dashboard\backend\venv"
+set "VIRTUAL_ENV=C:\Personal\Full Stack Project\Real-Time-Financial-Dashboard-5\backend\venv"
 
 if not defined PROMPT set PROMPT=$P$G
 

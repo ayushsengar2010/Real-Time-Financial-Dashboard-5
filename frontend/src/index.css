@@ -2,3 +2,54 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes card-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.ticker-wrap {
+  overflow: hidden;
+  width: 100%;
+}
+
+.ticker-track {
+  display: flex;
+  gap: 0.75rem;
+  width: max-content;
+  animation: ticker-scroll 24s linear infinite;
+}
+
+.ticker-wrap:hover .ticker-track {
+  animation-play-state: paused;
+}
+
+.card-rise {
+  opacity: 0;
+  animation: card-rise 420ms ease forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+  .card-rise {
+    animation: none;
+    opacity: 1;
+  }
+}

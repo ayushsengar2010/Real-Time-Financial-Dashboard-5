@@ -41,6 +41,36 @@ const Sidebar = () => {
               Most Active
             </NavLink>
           </li>
+          <li>
+            <NavLink to="/dashboard/market-pulse" className={({ isActive }) => `block py-2 px-4 rounded-lg transition duration-200 ${isActive ? 'bg-gray-700' : 'hover:bg-gray-800'}`}>
+              Market Pulse
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/dashboard/watchlist" className={({ isActive }) => `block py-2 px-4 rounded-lg transition duration-200 ${isActive ? 'bg-gray-700' : 'hover:bg-gray-800'}`}>
+              Watchlist
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/dashboard/sector-heatmap" className={({ isActive }) => `block py-2 px-4 rounded-lg transition duration-200 ${isActive ? 'bg-gray-700' : 'hover:bg-gray-800'}`}>
+              Sector Heatmap
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/dashboard/news-sentiment" className={({ isActive }) => `block py-2 px-4 rounded-lg transition duration-200 ${isActive ? 'bg-gray-700' : 'hover:bg-gray-800'}`}>
+              News Sentiment
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/dashboard/performance" className={({ isActive }) => `block py-2 px-4 rounded-lg transition duration-200 ${isActive ? 'bg-gray-700' : 'hover:bg-gray-800'}`}>
+              Performance
+            </NavLink>
+          </li>
+          <li>
+            <NavLink to="/dashboard/alerts" className={({ isActive }) => `block py-2 px-4 rounded-lg transition duration-200 ${isActive ? 'bg-gray-700' : 'hover:bg-gray-800'}`}>
+              Alerts
+            </NavLink>
+          </li>
         </ul>
       </nav>
       <div className="p-4">

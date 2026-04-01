@@ -1,4 +1,5 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext, useState } from 'react';
+import { Bot } from 'lucide-react';
 import AuthContext from '../context/AuthContext';
 import API from '../api';
 
@@ -12,58 +13,39 @@ const FloatingAIAssistant = () => {
   const handleSend = async (e) => {
     e.preventDefault();
     if (!input.trim()) return;
+
     const userMsg = { sender: 'user', text: input };
     setMessages((msgs) => [...msgs, userMsg]);
     setLoading(true);
+
     try {
       const res = await API.post('/ai/analyze', {
         query: input,
         symbols: [],
       });
-      console.log('AI response:', res.data);
-      
-      // Handle response formatting
+
       let responseText;
-      
       if (res.data && res.data.analysis) {
-        // Response from /ai/analyze endpoint
-        responseText = typeof res.data.analysis === 'object' 
-          ? JSON.stringify(res.data.analysis, null, 2) 
-          : res.data.analysis;
-          
-        // If there are recommendations, append them
-        if (res.data.recommendations && Array.isArray(res.data.recommendations)) {
-          responseText += "\n\nRecommendations:\n" + 
-            res.data.recommendations.map((r, i) => `${i+1}. ${r}`).join("\n");
+        responseText = typeof res.data.analysis === 'object' ? JSON.stringify(res.data.analysis, null, 2) : res.data.analysis;
+        if (Array.isArray(res.data.recommendations) && res.data.recommendations.length > 0) {
+          responseText += `\n\nRecommendations:\n${res.data.recommendations.map((r, i) => `${i + 1}. ${r}`).join('\n')}`;
         }
-        
-        // If there's a risk assessment, append it
         if (res.data.risk_assessment) {
-          responseText += "\n\nRisk Assessment:\n" + res.data.risk_assessment;
+          responseText += `\n\nRisk Assessment:\n${res.data.risk_assessment}`;
         }
       } else if (typeof res.data === 'string') {
-        // Direct string response
         responseText = res.data;
       } else {
-        // Fallback for unknown format
         responseText = JSON.stringify(res.data, null, 2);
       }
-      
-      setMessages((msgs) => [
-        ...msgs,
-        { sender: 'ai', text: responseText }
-      ]);
-    } catch (err) {
-      console.error('AI Assistant error:', err);
-      // Log the full error for debugging
-      console.error('Error details:', err.response ? err.response.data : err.message);
-      setMessages((msgs) => [
-        ...msgs,
-        { sender: 'ai', text: 'Sorry, something went wrong.' }
-      ]);
+
+      setMessages((msgs) => [...msgs, { sender: 'ai', text: responseText }]);
+    } catch {
+      setMessages((msgs) => [...msgs, { sender: 'ai', text: 'Sorry, something went wrong.' }]);
+    } finally {
+      setInput('');
+      setLoading(false);
     }
-    setInput('');
-    setLoading(false);
   };
 
   if (!user) return null;
@@ -74,32 +56,26 @@ const FloatingAIAssistant = () => {
         <div className="w-80 bg-white rounded-lg shadow-lg flex flex-col">
           <div className="flex items-center justify-between bg-blue-600 text-white px-4 py-2 rounded-t-lg">
             <span className="font-bold">AI Financial Assistant</span>
-            <button onClick={() => setOpen(false)} className="text-white">✕</button>
+            <button onClick={() => setOpen(false)} className="text-white">
+              x
+            </button>
           </div>
-          <div className="flex-1 p-4 overflow-y-auto max-h-96" style={{scrollBehavior: 'smooth'}}>
-            {messages.length === 0 && (
-              <div className="text-gray-400 text-sm">Ask about markets, stocks, or portfolio advice...</div>
-            )}
+          <div className="flex-1 p-4 overflow-y-auto max-h-96" style={{ scrollBehavior: 'smooth' }}>
+            {messages.length === 0 && <div className="text-gray-400 text-sm">Ask about markets, stocks, or portfolio advice...</div>}
             {messages.map((msg, idx) => (
               <div key={idx} className={`mb-3 flex ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
-                <div 
+                <div
                   className={`px-3 py-2 rounded-lg text-sm ${msg.sender === 'user' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}
-                  style={{
-                    whiteSpace: 'pre-wrap',
-                    maxWidth: '90%',
-                    overflowWrap: 'break-word',
-                    lineHeight: '1.4',
-                  }}
+                  style={{ whiteSpace: 'pre-wrap', maxWidth: '90%', overflowWrap: 'break-word', lineHeight: '1.4' }}
                 >
-                  {typeof msg.text === 'object' 
-                    ? JSON.stringify(msg.text, null, 2) 
-                    : msg.text.split('\n').map((line, i) => (
-                      <span key={i}>
-                        {line}
-                        {i < msg.text.split('\n').length - 1 && <br />}
-                      </span>
-                    ))
-                  }
+                  {typeof msg.text === 'object'
+                    ? JSON.stringify(msg.text, null, 2)
+                    : msg.text.split('\n').map((line, i, arr) => (
+                        <span key={`${idx}-${i}`}>
+                          {line}
+                          {i < arr.length - 1 && <br />}
+                        </span>
+                      ))}
                 </div>
               </div>
             ))}
@@ -111,14 +87,10 @@ const FloatingAIAssistant = () => {
               className="flex-1 px-3 py-2 focus:outline-none"
               placeholder="Type your question..."
               value={input}
-              onChange={e => setInput(e.target.value)}
+              onChange={(e) => setInput(e.target.value)}
               disabled={loading}
             />
-            <button
-              type="submit"
-              className="bg-blue-600 text-white px-4 py-2 rounded-r-lg disabled:opacity-50"
-              disabled={loading || !input.trim()}
-            >
+            <button type="submit" className="bg-blue-600 text-white px-4 py-2 rounded-r-lg disabled:opacity-50" disabled={loading || !input.trim()}>
               Send
             </button>
           </form>
@@ -126,10 +98,10 @@ const FloatingAIAssistant = () => {
       ) : (
         <button
           onClick={() => setOpen(true)}
-          className="bg-blue-600 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center text-2xl hover:bg-blue-700 focus:outline-none"
+          className="bg-blue-600 text-white rounded-full shadow-lg w-16 h-16 flex items-center justify-center hover:bg-blue-700 focus:outline-none"
           title="Open AI Assistant"
         >
-          🤖
+          <Bot size={30} />
         </button>
       )}
     </div>
